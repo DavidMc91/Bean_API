@@ -9,8 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bean_API.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class CoffeeBeanController : ControllerBase
     {
         private readonly ILogger<CoffeeBeanController> _logger;
@@ -33,11 +34,11 @@ namespace Bean_API.Controllers
                 var fullCoffeeBean = await _coffeeBeanService.GetCoffeeBean_ByID_Async(createdCoffeeBean.Id);
                 return CreatedAtAction(nameof(CreateCoffeeBean), fullCoffeeBean); //201 Created with Full CoffeeBean model
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred");
                 return StatusCode(500); //500 Internal Server Error if something goes wrong  
-            } 
+            }
         }
 
         [HttpPost("GenerateBeanOfTheDay")]
@@ -59,7 +60,7 @@ namespace Bean_API.Controllers
         #endregion
 
         #region Read
-
+       
         [HttpGet]
         public async Task<IActionResult> GetCoffeeBean_All_Async()
         {
