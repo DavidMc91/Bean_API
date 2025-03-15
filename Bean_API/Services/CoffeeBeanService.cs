@@ -2,23 +2,19 @@
 using Bean_API.Dtos;
 using Bean_API.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using static System.Net.Mime.MediaTypeNames;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using Microsoft.EntityFrameworkCore.Internal;
+using Bean_API.Repository;
 
 namespace Bean_API.Services
 {
     public class CoffeeBeanService : ICoffeeBeanService
     {
         private readonly ILogger<CoffeeBeanService> _logger;
-        private readonly AllthebeansContext _context;
+        private readonly ICoffeeBeanRepository _repository;
 
-        public CoffeeBeanService(ILogger<CoffeeBeanService> logger, AllthebeansContext context)
+        public CoffeeBeanService(ILogger<CoffeeBeanService> logger, ICoffeeBeanRepository coffeeBeanRepository)
         {
             _logger = logger;
-            _context = context;
+            _repository = coffeeBeanRepository;
         }
 
         #region Create
@@ -41,9 +37,7 @@ namespace Bean_API.Services
                     CountryId = coffeebean.CountryId
                 };
 
-                //Insert the mapped object
-                _context.Coffeebeans.Add(mappedCoffeebean);
-                await _context.SaveChangesAsync();
+                await _repository.Create_Async(mappedCoffeebean);
 
                 return coffeebean;
             }
@@ -59,75 +53,72 @@ namespace Bean_API.Services
             }
         }
 
-        public async Task<ResponseCoffeeBeanDto> GenerateBeanOfTheDay()
+        public async Task<ResponseCoffeeBeanDto?> GenerateBeanOfTheDay_Async()
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
             var yesterday = today.AddDays(-1);
 
             try
             {
-                //Ensure a bean of the day doesn't already exist for today
-                var existingBotd = await (from cb in _context.Coffeebeans
-                                          join botd in _context.Coffeebeanofthedays on cb.Id equals botd.CoffeeBeanId
-                                          where botd.BotdDate == today
-                                          select new ResponseCoffeeBeanDto
-                                          {
-                                              Id = cb.Id,
-                                              IndexNum = cb.IndexNum,
-                                              IsBotd = Convert.ToBoolean(cb.IsBotd),
-                                              Cost = cb.Cost,
-                                              Image = cb.Image,
-                                              ColourName = cb.Colour != null ? cb.Colour.Name : "Unknown",
-                                              Name = cb.Name,
-                                              Description = cb.Description,
-                                              CountryName = cb.Country != null ? cb.Country.Name : "Unknown"
-                                          })
-                                          .FirstOrDefaultAsync();
-
+                //Ensure a bean of the day doesn't already exist for today. If it does, return it
+                var existingBotd = await _repository.GetExistingBotd_Async(today);
                 if (existingBotd != null)
                 {
-                    return existingBotd;
+                    return new ResponseCoffeeBeanDto
+                    {
+                        Id = existingBotd.Id,
+                        IndexNum = existingBotd.IndexNum,
+                        IsBotd = Convert.ToBoolean(existingBotd.IsBotd),
+                        Cost = existingBotd.Cost,
+                        Image = existingBotd.Image,
+                        ColourName = existingBotd.Colour != null ? existingBotd.Colour.Name : "Unknown",
+                        Name = existingBotd.Name,
+                        Description = existingBotd.Description,
+                        CountryName = existingBotd.Country != null ? existingBotd.Country.Name : "Unknown"
+                    };
                 }
 
-                //No bean of the day exists for today, so get yesterday's bean of the day
-                var yesterdayBotd = await (from cb in _context.Coffeebeans
-                                           where cb.IsBotd == 1
-                                           select cb)
-                                          .FirstOrDefaultAsync();
+                //No bean of the day exists for today, so lets try to create a new one. First we need to get all the coffee beans
+                var allCoffeeBeans = await _repository.Get_All_Async(true);
+                if (allCoffeeBeans == null || allCoffeeBeans.Count() == 0) return null;
 
+                //Get yesterday's bean of the day
+                var yesterdayBotd = allCoffeeBeans
+                    .Where(cb => cb.IsBotd == 1)
+                    .FirstOrDefault();
 
                 //Get a random coffee bean, excluding yesterday's botd
-                var randomCoffeeBean = await _context.Coffeebeans
-                   .Where(cb => yesterdayBotd == null || cb.Id != yesterdayBotd.Id)
-                   .OrderBy(x => Guid.NewGuid())
-                   .FirstAsync();
+                var todaysBotd = allCoffeeBeans
+                    .Where(cb => yesterdayBotd == null || cb.Id != yesterdayBotd?.Id)
+                    .OrderBy(x => Guid.NewGuid())
+                    .First();
 
+                //Update the botd status for yesterday's bean and today's bean
                 if (yesterdayBotd != null) yesterdayBotd.IsBotd = 0;
-                randomCoffeeBean.IsBotd = 1;
+                todaysBotd.IsBotd = 1;
 
                 //Create our new botd entry, to save to the DB
                 var newBotd = new Coffeebeanoftheday
                 {
-                    CoffeeBeanId = randomCoffeeBean.Id,
+                    CoffeeBeanId = todaysBotd.Id,
                     BotdDate = today
                 };
 
-                //Save to the DB and return the coffeebean
-                _context.Coffeebeanofthedays.Add(newBotd);
-
-                await _context.SaveChangesAsync();
+                //Save to the DB and return the coffee bean of the day in a DTO
+                await _repository.AddBotd_Async(newBotd);
+                await _repository.SaveChanges_Async();
 
                 return new ResponseCoffeeBeanDto
                 {
-                    Id = randomCoffeeBean.Id,
-                    IndexNum = randomCoffeeBean.IndexNum,
-                    IsBotd = Convert.ToBoolean(randomCoffeeBean.IsBotd),
-                    Cost = randomCoffeeBean.Cost,
-                    Image = randomCoffeeBean.Image,
-                    ColourName = randomCoffeeBean.Colour != null ? randomCoffeeBean.Colour.Name : "Unknown",
-                    Name = randomCoffeeBean.Name,
-                    Description = randomCoffeeBean.Description,
-                    CountryName = randomCoffeeBean.Country != null ? randomCoffeeBean.Country.Name : "Unknown"
+                    Id = todaysBotd.Id,
+                    IndexNum = todaysBotd.IndexNum,
+                    IsBotd = Convert.ToBoolean(todaysBotd.IsBotd),
+                    Cost = todaysBotd.Cost,
+                    Image = todaysBotd.Image,
+                    ColourName = todaysBotd.Colour != null ? todaysBotd.Colour.Name : "Unknown",
+                    Name = todaysBotd.Name,
+                    Description = todaysBotd.Description,
+                    CountryName = todaysBotd.Country != null ? todaysBotd.Country.Name : "Unknown"
                 };
             }
             catch (DbUpdateException ex)
@@ -149,8 +140,11 @@ namespace Bean_API.Services
         {
             try
             {
-                return await _context.Coffeebeans
-                .Select(cb => new ResponseCoffeeBeanDto
+                //Get all the coffee beans from the DB
+                var coffeeBeanList = await _repository.Get_All_Async(false);
+             
+                //Map to a DTO model and return to caller
+                return coffeeBeanList.Select(cb => new ResponseCoffeeBeanDto
                 {
                     Id = cb.Id,
                     IndexNum = cb.IndexNum,
@@ -161,8 +155,7 @@ namespace Bean_API.Services
                     Name = cb.Name,
                     Description = cb.Description,
                     CountryName = cb.Country != null ? cb.Country.Name : "Unknown"
-                })
-                .ToListAsync();
+                });
             }
             catch (Exception ex)
             {
@@ -176,21 +169,21 @@ namespace Bean_API.Services
         {
             try
             {
-                return await _context.Coffeebeans
-                .Where(cb => cb.Id == id)
-                .Select(cb => new ResponseCoffeeBeanDto
+                //Get the coffee bean by ID. It will return null if not found
+                var coffeeBean = await _repository.Get_ByID_Async(id, false);
+
+                return coffeeBean != null ? new ResponseCoffeeBeanDto
                 {
-                    Id = cb.Id,
-                    IndexNum = cb.IndexNum,
-                    IsBotd = Convert.ToBoolean(cb.IsBotd),
-                    Cost = cb.Cost,
-                    Image = cb.Image,
-                    ColourName = cb.Colour != null ? cb.Colour.Name : "Unknown",
-                    Name = cb.Name,
-                    Description = cb.Description,
-                    CountryName = cb.Country != null ? cb.Country.Name : "Unknown"
-                })
-                .FirstAsync();
+                    Id = coffeeBean.Id,
+                    IndexNum = coffeeBean.IndexNum,
+                    IsBotd = Convert.ToBoolean(coffeeBean.IsBotd),
+                    Cost = coffeeBean.Cost,
+                    Image = coffeeBean.Image,
+                    ColourName = coffeeBean.Colour != null ? coffeeBean.Colour.Name : "Unknown",
+                    Name = coffeeBean.Name,
+                    Description = coffeeBean.Description,
+                    CountryName = coffeeBean.Country != null ? coffeeBean.Country.Name : "Unknown"
+                } : null;
             }
             catch (Exception ex)
             {
@@ -203,50 +196,20 @@ namespace Bean_API.Services
         {
             try
             {
-                var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
-                var query = _context.Coffeebeans.AsQueryable();
+                var coffeBeanList = await _repository.Get_BySearch_Async(search);
 
-                if (!string.IsNullOrEmpty(search.Name))
+                return coffeBeanList.Select(cb => cb!= null ? new ResponseCoffeeBeanDto
                 {
-                    query = query.Where(x => x.Name.Contains(search.Name));
-                }
-
-                if (search.ColourId.HasValue)
-                {
-                    query = query.Where(x => x.ColourId == search.ColourId);
-                }
-
-                if (search.CountryId.HasValue)
-                {
-                    query = query.Where(x => x.CountryId == search.CountryId);
-                }
-
-                if (search.IsBotd.HasValue)
-                {
-                    query = query.Join(_context.Coffeebeanofthedays, cb => cb.Id, botd => botd.CoffeeBeanId, (cb, botd) => new { cb, botd })
-                                 .Where(x => x.botd.BotdDate == today)
-                                 .Select(x => x.cb);
-                }
-
-                if (search.MaxCost.HasValue)
-                {
-                    query = query.Where(x => x.Cost <= search.MaxCost);
-                }
-
-                return await query
-                    .Select(cb => new ResponseCoffeeBeanDto
-                    {
-                        Id = cb.Id,
-                        IndexNum = cb.IndexNum,
-                        IsBotd = Convert.ToBoolean(cb.IsBotd),
-                        Cost = cb.Cost,
-                        Image = cb.Image,
-                        ColourName = cb.Colour != null ? cb.Colour.Name : "Unknown",
-                        Name = cb.Name,
-                        Description = cb.Description,
-                        CountryName = cb.Country != null ? cb.Country.Name : "Unknown"
-                    })
-                    .ToListAsync();
+                    Id = cb.Id,
+                    IndexNum = cb.IndexNum,
+                    IsBotd = Convert.ToBoolean(cb.IsBotd),
+                    Cost = cb.Cost,
+                    Image = cb.Image,
+                    ColourName = cb.Colour != null ? cb.Colour.Name : "Unknown",
+                    Name = cb.Name,
+                    Description = cb.Description,
+                    CountryName = cb.Country != null ? cb.Country.Name : "Unknown"
+                } : null);
             }
             catch (Exception ex)
             {
@@ -264,7 +227,7 @@ namespace Bean_API.Services
             try
             {
                 //Find existing bean
-                var existingBean = await _context.Coffeebeans.FindAsync(id);
+                var existingBean = await _repository.Get_ByID_Async(id, true);
                 if (existingBean == null) return null;
 
                 //Update properties
@@ -279,9 +242,29 @@ namespace Bean_API.Services
                 existingBean.CountryId = coffeebean.CountryId;
 
                 //_context.Coffeebeans.Update(existingBean);
-                await _context.SaveChangesAsync();
+                await _repository.SaveChanges_Async();
 
                 return coffeebean;
+
+                ////Find existing bean
+                //var existingBean = await _context.Coffeebeans.FindAsync(id);
+                //if (existingBean == null) return null;
+
+                ////Update properties
+                //existingBean.Id = coffeebean.Id;
+                //existingBean.IndexNum = coffeebean.IndexNum;
+                //existingBean.IsBotd = coffeebean.IsBotd;
+                //existingBean.Cost = coffeebean.Cost;
+                //existingBean.Image = coffeebean.Image;
+                //existingBean.ColourId = coffeebean.ColourId;
+                //existingBean.Name = coffeebean.Name;
+                //existingBean.Description = coffeebean.Description;
+                //existingBean.CountryId = coffeebean.CountryId;
+
+                ////_context.Coffeebeans.Update(existingBean);
+                //await _context.SaveChangesAsync();
+
+                //return coffeebean;
             }
             catch (DbUpdateException ex)
             {
@@ -303,11 +286,10 @@ namespace Bean_API.Services
         {
             try
             {
-                var coffeeBean = await _context.Coffeebeans.FindAsync(id);
+                var coffeeBean = await _repository.Get_ByID_Async(id, true);
                 if (coffeeBean == null) return false;
 
-                _context.Coffeebeans.Remove(coffeeBean);
-                await _context.SaveChangesAsync();
+                await _repository.Delete_Async(coffeeBean);
                 return true;
             }
             catch (DbUpdateException ex)

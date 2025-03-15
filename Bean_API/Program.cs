@@ -5,6 +5,7 @@ using Bean_API.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Bean_API.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +20,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//builder.Services.AddSingleton<ICoffeeBeanService, CoffeeBeanService>();
+
+//Specify dependencies for DI
 builder.Services.AddScoped<ICoffeeBeanService, CoffeeBeanService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICoffeeBeanRepository, CoffeeBeanRepository>();
 //builder.Services.Configure<ApiBehaviorOptions>(options =>
 //{
 //    options.SuppressModelStateInvalidFilter = true;

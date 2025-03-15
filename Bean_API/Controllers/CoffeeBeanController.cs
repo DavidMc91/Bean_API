@@ -32,7 +32,7 @@ namespace Bean_API.Controllers
             {
                 var createdCoffeeBean = await _coffeeBeanService.CreateCoffeeBean_Async(coffeeBean);
                 var fullCoffeeBean = await _coffeeBeanService.GetCoffeeBean_ByID_Async(createdCoffeeBean.Id);
-                return CreatedAtAction(nameof(CreateCoffeeBean), fullCoffeeBean); //201 Created with Full CoffeeBean model
+                return CreatedAtAction(nameof(CreateCoffeeBean), fullCoffeeBean); //201 Created with Dto model
             }
             catch (Exception ex)
             {
@@ -41,13 +41,14 @@ namespace Bean_API.Controllers
             }
         }
 
-        [HttpPost("GenerateBeanOfTheDay")]
+        [HttpPost("GenerateBeanOfTheDay_Async")]
         public async Task<IActionResult> GenerateBeanOfTheDay()
         {
             try
             {
-                var botd = await _coffeeBeanService.GenerateBeanOfTheDay();
+                var botd = await _coffeeBeanService.GenerateBeanOfTheDay_Async();
 
+                if (botd == null) return Conflict(); //409 if not found (most likely the database doesn't have any coffee bean entries so we can't generate a Botd)
                 return CreatedAtAction(nameof(GenerateBeanOfTheDay), botd); //201 Created with BeanOfTheDay model
             }
             catch (Exception ex)
@@ -102,7 +103,7 @@ namespace Bean_API.Controllers
             {
                 var coffeeBean = await _coffeeBeanService.GetCoffeeBean_BySearch_Async(search);
 
-                if (coffeeBean == null) return NotFound(); //404 if not found
+                if (coffeeBean.Count() == 0) return NotFound(); //404 if not found
                 return Ok(coffeeBean); //200 OK with updated object
             }
             catch (Exception ex)

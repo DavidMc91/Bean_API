@@ -1,7 +1,9 @@
-﻿namespace Bean_APITest
+﻿
+
+namespace Bean_APITest
 {
     [TestClass]
-    public sealed class Test1
+    public class CoffeeBeanControllerTests
     {
         [TestMethod]
         public void TestMethod1()

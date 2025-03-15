@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Bean_API.Models;
 
@@ -80,7 +77,7 @@ public partial class AllthebeansContext : DbContext
 
             entity.HasOne(d => d.CoffeeBean).WithMany(p => p.Coffeebeanofthedays)
                 .HasForeignKey(d => d.CoffeeBeanId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("coffeebeanoftheday_ibfk_1");
         });
 

@@ -7,7 +7,7 @@ namespace Bean_API.Services
     {
         public Task<CreateCoffeeBeanDto> CreateCoffeeBean_Async(CreateCoffeeBeanDto coffeeBean);
 
-        public Task<ResponseCoffeeBeanDto> GenerateBeanOfTheDay();
+        public Task<ResponseCoffeeBeanDto?> GenerateBeanOfTheDay_Async();
 
         public Task<ResponseCoffeeBeanDto?> GetCoffeeBean_ByID_Async(string id);
 
