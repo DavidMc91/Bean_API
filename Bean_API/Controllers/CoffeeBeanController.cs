@@ -1,11 +1,7 @@
-﻿
-using Bean_API.Dtos;
-using Bean_API.Models;
+﻿using Bean_API.Dtos;
 using Bean_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-
 
 namespace Bean_API.Controllers
 {

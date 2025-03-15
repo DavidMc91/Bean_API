@@ -7,7 +7,6 @@ namespace Bean_API.Repository
     {
         public Task<Coffeebean> Create_Async(Coffeebean coffeeBean);
         public Task<Coffeebean?> GetExistingBotd_Async(DateOnly date);
-        //public Task<Coffeebean> GetRandomCoffeeBean_Async(string? excludeBeanId);
         public Task AddBotd_Async(Coffeebeanoftheday botd);
         public Task SaveChanges_Async();
         public Task<IEnumerable<Coffeebean>> Get_All_Async(bool trackChanges);

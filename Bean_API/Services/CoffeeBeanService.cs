@@ -241,30 +241,9 @@ namespace Bean_API.Services
                 existingBean.Description = coffeebean.Description;
                 existingBean.CountryId = coffeebean.CountryId;
 
-                //_context.Coffeebeans.Update(existingBean);
                 await _repository.SaveChanges_Async();
 
                 return coffeebean;
-
-                ////Find existing bean
-                //var existingBean = await _context.Coffeebeans.FindAsync(id);
-                //if (existingBean == null) return null;
-
-                ////Update properties
-                //existingBean.Id = coffeebean.Id;
-                //existingBean.IndexNum = coffeebean.IndexNum;
-                //existingBean.IsBotd = coffeebean.IsBotd;
-                //existingBean.Cost = coffeebean.Cost;
-                //existingBean.Image = coffeebean.Image;
-                //existingBean.ColourId = coffeebean.ColourId;
-                //existingBean.Name = coffeebean.Name;
-                //existingBean.Description = coffeebean.Description;
-                //existingBean.CountryId = coffeebean.CountryId;
-
-                ////_context.Coffeebeans.Update(existingBean);
-                //await _context.SaveChangesAsync();
-
-                //return coffeebean;
             }
             catch (DbUpdateException ex)
             {
