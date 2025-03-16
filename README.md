@@ -27,7 +27,7 @@ For the database, I chose to go with MySQL Server (the latest stable version is 
 
 ### Database schema choices
 - I have done database first for the schema. I know code first for entity framework is usually the better choice for new projects but I did database first as it has been a while since I've used MySQL and I wanted to practise by creating the database and tables in WorkBench 
-- I have created lookup tables for Country and Colour values. I have chosen to do this as the list of countries and colours can be very long, over time, and keeping them in a lookup table can keep the database lighter. Also using a code in the API calls is also cleaner and less prone to error (i.e. typos)
+- I have created lookup tables for Country and Colour values. I have chosen to do this as the list of countries and colours can be very long, over time, and keeping them in a lookup table can keep the database lighter. Also using a lookup ID in the API calls is also cleaner and less prone to error (i.e. typos)
 - I have created a table specifically for recording Bean Of The Day. This will give us a full history of when a bean was BOTD which will be useful if the business logic needs to change from "can't be same as previous day" (e.g. "can't be repeated bean from this week"). The IsBOTD field in the CoffeeBean table still exists and is syncronised with the CoffeeBeanOfTheDay table
 
 ## Entity Framework 8 (with Pomelo 8 for MySQL)
