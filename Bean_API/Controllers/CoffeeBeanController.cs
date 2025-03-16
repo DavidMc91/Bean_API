@@ -113,7 +113,7 @@ namespace Bean_API.Controllers
         #region Update
 
         [HttpPut("id")]
-        public async Task<IActionResult> UpdateCoffeeBean(string id, [FromBody] CreateCoffeeBeanDto coffeeBean)
+        public async Task<IActionResult> UpdateCoffeeBean_Async(string id, [FromBody] CreateCoffeeBeanDto coffeeBean)
         {
             try
             {
@@ -138,7 +138,7 @@ namespace Bean_API.Controllers
         #region Delete
 
         [HttpDelete("id")]
-        public async Task<IActionResult> DeleteCoffeeBean(string id)
+        public async Task<IActionResult> DeleteCoffeeBean_Async(string id)
         {
             try 
             {

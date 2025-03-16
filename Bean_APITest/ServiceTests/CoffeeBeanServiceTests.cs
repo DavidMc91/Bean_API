@@ -5,7 +5,7 @@ using Bean_API.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace Bean_APITest
+namespace Bean_APITest.ServiceTests
 {
     [TestClass]
     public class CoffeeBeanServiceTests

@@ -6,7 +6,7 @@ using Bean_API.Repository;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
-namespace Bean_APITest
+namespace Bean_APITest.RepositoryTests
 {
     [TestClass]
     public class CoffeeBeanRepositoryTests

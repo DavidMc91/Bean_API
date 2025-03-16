@@ -8,12 +8,12 @@ namespace Bean_API.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly ILogger<CoffeeBeanService> _logger;
+        private readonly ILogger<AuthService> _logger;
         private readonly string _secretKey;
         private readonly string _issuer;
         private readonly string _audience;
 
-        public AuthService(ILogger<CoffeeBeanService> logger, IConfiguration configuration)
+        public AuthService(ILogger<AuthService> logger, IConfiguration configuration)
         {
             _logger = logger;
             _secretKey = configuration["Jwt:Key"] ?? throw new ArgumentNullException(nameof(configuration), "Jwt:Key is not configured");

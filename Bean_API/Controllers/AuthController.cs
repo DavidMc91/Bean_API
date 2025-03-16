@@ -8,10 +8,10 @@ namespace Bean_API.Controllers
     [Route("[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly ILogger<CoffeeBeanController> _logger;
+        private readonly ILogger<AuthController> _logger;
         private readonly IAuthService _authService;
 
-        public AuthController(ILogger<CoffeeBeanController> logger, IAuthService authService)
+        public AuthController(ILogger<AuthController> logger, IAuthService authService)
         {
             _logger = logger;
             _authService = authService;

@@ -6,16 +6,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Bean_API.Repository;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Add services to the container.
+//In production, for further security, this should be retreived from a cloud service like: AWS Secrets Manager
 builder.Services.AddDbContext<AllthebeansContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(9, 2, 0))
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")) //Line updated to auto detect the database server version
     )
 );
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -25,12 +27,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICoffeeBeanService, CoffeeBeanService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICoffeeBeanRepository, CoffeeBeanRepository>();
-//builder.Services.Configure<ApiBehaviorOptions>(options =>
-//{
-//    options.SuppressModelStateInvalidFilter = true;
-//});
 
-// Configure JWT Authentication
+// Configure JWT Authentication (Currently retreiving from appsettings.json but in production, this should be retreived from either a database or a cloud service like: AWS Secrets Manager)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -58,7 +56,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
+app.UseAuthentication(); //Used for the JWT Authentication
 app.UseAuthorization();
 
 app.MapControllers();
