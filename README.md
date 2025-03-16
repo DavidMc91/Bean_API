@@ -18,8 +18,17 @@ For authentication, I considered OAuth (which I have used in previous projects, 
 ## MSTest and Moq for Unit Testing
 For unit testing, I used MSTest as the test framework and Moq to mock dependencies. I did consider using XUnit or NUnit frameworks instead of MSTest, but I stuck with MSTest as I have used it previously, it integrates well with Visual Studio, it's easy to understand, and works well. I have used Moq to create mock objects within my unit tests, and to take advantage of the dependency injection design patterns I have implemented within my solution to better test the controller, service and repository layers. For example, when testing the controller class methods, I have created mock Service objects within the unit tests to ensure the controller is calling the service correctly and handling the results.
 
+### Unit tests in my project
+- Please note that I have added "happy path" unit tests for my methods to show how I would go about doing the tests.
+- There are many more unit tests I would add if I had time to cover (i.e. failure handling / edge cases)
+
 ## MySQL Server 9.2.0
 For the database, I chose to go with MySQL Server (the latest stable version is 9.2.0) as it is lightweight, reliable, has compatibility with Entity Framework, can be used on multiple different operating system, and fits the requirement for "relational database schema to store the bean details from the JSON file". 
+
+### Database schema choices
+- I have done database first for the schema. I know code first for entity framework is usually the better choice for new projects but I did database first as it has been a while since I've used MySQL and I wanted to practise by creating the database and tables in WorkBench 
+- I have created lookup tables for Country and Colour values. I have chosen to do this as the list of countries and colours can be very long, over time, and keeping them in a lookup table can keep the database lighter. Also using a code in the API calls is also cleaner and less prone to error (i.e. typos)
+- I have created a table specifically for recording Bean Of The Day. This will give us a full history of when a bean was BOTD which will be useful if the business logic needs to change from "can't be same as previous day" (e.g. "can't be repeated bean from this week"). The IsBOTD field in the CoffeeBean table still exists and is syncronised with the CoffeeBeanOfTheDay table
 
 ## Entity Framework 8 (with Pomelo 8 for MySQL)
 I selected Entity Framework 8 (there is a version 9 but it isn't compatible with .NET 8) as the Object-Relational Mapping (ORM) tool to simplify database interactions and handle data access in a clean, consistent manner. To integrate with MySQL, I have Pomelo.EntityFrameworkCore.MySQL (version 8 for compatibility with EF 8 and .NET 8) as it is widely used and supported EF core provider (it is used in the EF model creations).
