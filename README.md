@@ -4,7 +4,7 @@ Dear Tombola team,
 
 Many thanks for the opportunity to complete this technical challenge and for being patient with me in delivering this to you during a rough time for my family, it's really much appreciated.
 
-From the challenge provided, I have chosen to go soley with scenario 2 as it fit better with my strengths. My goal for this solution was to build a lightweight, scalable, secure, and maintainable solution using industry standard tools and frameworks. Below I have outlined the key technologies used and the reasoning behind each choice:
+From the challenge provided, I have chosen to go soley with scenario 2 as it fit better with my strengths. My goal for this solution was to build a lightweight, scalable, secure, and maintainable solution using industry standard tools and frameworks. Below I have outlined the key technologies used and the reasoning behind each choice. You can find the setup instructions in this GitHub repository -> Steup -> "Setup_Instructions_Readme"
 
 ## Visual Studio 2022
 I have chosen this IDE due it's powerful features for .NET development, it's popularity, and due to my personal familiarity/experience with this development environment. Features such as robust debugging, IntelliSense, and integration with version control (Azure DevOps, Git) make it a great choice, in my opinion.
@@ -29,5 +29,3 @@ The combination of these technologies provides a modern, supportable, scalable, 
 
 Kind regards,
 David
-
-...To be continued with setup instructions
